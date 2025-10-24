@@ -1380,11 +1380,32 @@
                             onEachFeature: function(feature, layer) {
                                 const props = feature.properties;
                                 const endereco = props.descriptio || props.Name || 'Endereço não disponível';
+                                
+                                // Extrair bairro
+                                let bairro = 'N/A';
+                                if (props.Name) {
+                                    const parts = props.Name.split(',');
+                                    bairro = parts[3] ? parts[3].trim() : parts[0].trim();
+                                } else if (props.Bairro) {
+                                    bairro = props.Bairro;
+                                }
+                                
+                                // Extrair idade
+                                const idade = props.Idade || props.idade || props.age || 'N/A';
+                                
+                                // Extrair sexo
+                                const sexo = props.Sexo || props.sexo || props.gender || 'N/A';
+                                
+                                // Extrair data
+                                const data = props.Data || props.data || props.date || year;
+                                
                                 layer.bindPopup(`
                                     <div class="popup-title">🦟 Caso de Dengue - ${year}</div>
-                                    <p><strong>Ano:</strong> ${year}</p>
-                                    <p><strong>Local:</strong> ${endereco}</p>
-                                    <p><strong>Bairro:</strong> ${props.Name ? props.Name.split(',')[3] || 'N/A' : 'N/A'}</p>
+                                    <p><strong>📅 Data:</strong> ${data}</p>
+                                    <p><strong>📍 Bairro:</strong> ${bairro}</p>
+                                    <p><strong>👤 Idade:</strong> ${idade} anos</p>
+                                    <p><strong>⚧ Sexo:</strong> ${sexo}</p>
+                                    <p><strong>📌 Local:</strong> ${endereco}</p>
                                 `);
                             }
                         });
@@ -1806,11 +1827,32 @@
                 onEachFeature: function(feature, layer) {
                     const props = feature.properties;
                     const endereco = props.descriptio || props.Name || 'Endereço não disponível';
+                    
+                    // Extrair bairro
+                    let bairro = 'N/A';
+                    if (props.Name) {
+                        const parts = props.Name.split(',');
+                        bairro = parts[3] ? parts[3].trim() : parts[0].trim();
+                    } else if (props.Bairro) {
+                        bairro = props.Bairro;
+                    }
+                    
+                    // Extrair idade
+                    const idade = props.Idade || props.idade || props.age || 'N/A';
+                    
+                    // Extrair sexo
+                    const sexo = props.Sexo || props.sexo || props.gender || 'N/A';
+                    
+                    // Extrair data
+                    const data = props.Data || props.data || props.date || year;
+                    
                     layer.bindPopup(`
                         <div class="popup-title">🦟 Caso de Dengue - ${year}</div>
-                        <p><strong>Ano:</strong> ${year}</p>
-                        <p><strong>Local:</strong> ${endereco}</p>
-                        <p><strong>Bairro:</strong> ${props.Name ? props.Name.split(',')[3] || 'N/A' : 'N/A'}</p>
+                        <p><strong>📅 Data:</strong> ${data}</p>
+                        <p><strong>📍 Bairro:</strong> ${bairro}</p>
+                        <p><strong>👤 Idade:</strong> ${idade} anos</p>
+                        <p><strong>⚧ Sexo:</strong> ${sexo}</p>
+                        <p><strong>📌 Local:</strong> ${endereco}</p>
                     `);
                     clusterGroup.addLayer(layer);
                 }
