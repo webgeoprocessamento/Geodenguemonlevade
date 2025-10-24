@@ -1865,8 +1865,12 @@
                 }
             });
             
-            // Ordenar e pegar top 5
+            // Filtrar bairros não relevantes e ordenar, pegando top 5
+            const bairrosExcluir = ['João Monlevade', 'Não identificado', 'N/A', '', 'null', 'undefined'];
             const sortedNeighborhoods = Object.entries(aggregatedNeighborhoods)
+                .filter(([bairro]) => !bairrosExcluir.some(excluir => 
+                    bairro.toLowerCase().includes(excluir.toLowerCase())
+                ))
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
             
