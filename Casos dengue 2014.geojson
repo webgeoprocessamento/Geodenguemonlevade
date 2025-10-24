@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6702d8640734450a7b170c549636167c2069b9b0a09dda4c21291fccc21a8730
-size 2286
+{
+"type": "FeatureCollection",
+"name": "Casos dengue 2014",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": "RUA VANADIO, 193, CRUZEIRO CELESTE, João Monlevade, Minas Gerais", "descriptio": "Rua Vanádio, 193, João Monlevade - MG, 35931-069, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.1764705, -19.838785 ] } },
+{ "type": "Feature", "properties": { "Name": "Rua Maísa Maxímiano, 78, INDUSTRIAL, João Monlevade, Minas Gerais", "descriptio": "Rua Maisa Maximiana, 78, João Monlevade - MG, 35930-128, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.19644, -19.813 ] } },
+{ "type": "Feature", "properties": { "Name": "RUA ONZE, 110, VILA TANQUE, João Monlevade, Minas Gerais", "descriptio": "Rua Onze, 110, João Monlevade - MG, 35931-241, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.1405403, -19.8221506 ] } },
+{ "type": "Feature", "properties": { "Name": "RUA INDUSTRIAL, 254, ROSARIO, João Monlevade, Minas Gerais", "descriptio": "Rua Industrial, 254, João Monlevade - MG, 35930-182, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.17632, -19.8059 ] } },
+{ "type": "Feature", "properties": { "Name": "RUA 30, 316, LOANDA, João Monlevade, Minas Gerais", "descriptio": "Rua Trinta, 316, João Monlevade - MG, 35931-014, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.16738, -19.829 ] } }
+]
+}

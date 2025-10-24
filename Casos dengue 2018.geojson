@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b493c14abc62b20a53e03224c172fde29c7c97f908f9f163fd49ee94ff975709
-size 2785
+{
+"type": "FeatureCollection",
+"name": "Casos dengue 2018",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": "RUA IPATINGA, 68, RECANTO PARAISO, João Monlevade, Minas Gerais", "descriptio": "Rua Ipatinga, 68, João Monlevade - MG, 35930-125, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.1918944, -19.8131035 ] } },
+{ "type": "Feature", "properties": { "Name": "São Tomás de Aquino, 152, ERNESTINA GRACIANA, João Monlevade, Minas Gerais", "descriptio": "Rua São Tomás de Aquino, 152, João Monlevade - MG, 35931-078, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.17749, -19.83434 ] } },
+{ "type": "Feature", "properties": { "Name": "Rua BOM JESUS DO GALHO, 630, BELMONTE, João Monlevade, Minas Gerais", "descriptio": "Rua Bom Jesus do Galho, João Monlevade - MG, 35930-304, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.15954, -19.81987 ] } },
+{ "type": "Feature", "properties": { "Name": "rua HOLANDA, 144, BOA VISTA, João Monlevade, Minas Gerais", "descriptio": "Rua Holanda, 144, João Monlevade - MG, 35931-266, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.2045, -19.82014 ] } },
+{ "type": "Feature", "properties": { "Name": "rua Alameda Cearense, 83, CRUZEIRO CELESTE, João Monlevade, Minas Gerais", "descriptio": "Alameda Cearenses, 83, João Monlevade - MG, 35931-068, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.17428, -19.8399856 ] } },
+{ "type": "Feature", "properties": { "Name": "Rua Santa Cruz, 100, Nova esperança, João Monlevade, Minas Gerais", "descriptio": "Rua Santa Cruz, 100, João Monlevade - MG, 35930-293, Brazil", "timestamp": null, "begin": null, "end": null, "altitudeMo": "clampToGround", "tessellate": -1, "extrude": 0, "visibility": -1, "drawOrder": null, "icon": null }, "geometry": { "type": "Point", "coordinates": [ -43.1833317, -19.8263493 ] } }
+]
+}
