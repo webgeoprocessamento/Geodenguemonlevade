@@ -898,7 +898,7 @@
         <!-- Seção: Casos de Dengue -->
         <div class="layer-section">
             <div class="layer-section-title">
-                🦟 Dados Epidemiológicos (2010-2024)
+                🦟 Dados Epidemiológicos (2010-2023)
             </div>
             
             <!-- Controles de Visualização -->
@@ -1017,13 +1017,6 @@
                         2023
                     </label>
                 </div>
-                <div class="layer-item">
-                    <input type="checkbox" id="dengue2024Check" onchange="toggleLayer('dengue2024')">
-                    <label for="dengue2024Check">
-                        <span class="layer-legend" style="background: #0099ff; border-radius: 50%;"></span>
-                        2024
-                    </label>
-                </div>
             </div>
         </div>
         </div>
@@ -1130,8 +1123,7 @@
             dengue2020: null,
             dengue2021: null,
             dengue2022: null,
-            dengue2023: null,
-            dengue2024: null
+            dengue2023: null
         };
 
         // Cores para cada ano de dengue (gradiente de vermelho a azul)
@@ -1149,8 +1141,7 @@
             '2020': '#00ff00',
             '2021': '#00ff66',
             '2022': '#00ffcc',
-            '2023': '#00ccff',
-            '2024': '#0099ff'
+            '2023': '#00ccff'
         };
 
         // Variáveis para heatmap e estatísticas
@@ -1303,8 +1294,8 @@
                     }
                 });
 
-                // Carregar todas as camadas de dengue (2010-2024)
-                const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
+                // Carregar todas as camadas de dengue (2010-2023)
+                const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
                 
                 for (const year of dengueYears) {
                     try {
@@ -1643,7 +1634,7 @@
 
         // Função para mostrar todos os anos
         function showAllYears() {
-            const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
+            const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'];
             
             // Limpar e repopular activeYears
             activeYears = [];
