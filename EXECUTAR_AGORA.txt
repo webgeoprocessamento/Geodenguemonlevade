@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════
+ 🚀 EXECUTE ESTE COMANDO NO POWERSHELL:
+═══════════════════════════════════════════════════════════
+
+git push origin main
+
+═══════════════════════════════════════════════════════════
+ 🔐 VAI PEDIR:
+═══════════════════════════════════════════════════════════
+
+Username for 'https://github.com': AdrianoJbarros
+
+Password for 'https://AdrianoJbarros@github.com': 
+[COLE SEU TOKEN AQUI - não vai aparecer na tela, é normal!]
+
+═══════════════════════════════════════════════════════════
+ ✅ SUCESSO SERÁ:
+═══════════════════════════════════════════════════════════
+
+Enumerating objects: XX, done.
+Counting objects: 100% (XX/XX), done.
+Writing objects: 100% (XX/XX), done.
+To https://github.com/webgeoprocessamento/Geodenguemonlevade.git
+ * [new branch]      main -> main
+
+═══════════════════════════════════════════════════════════
+ 🌐 DEPOIS: ATIVAR GITHUB PAGES
+═══════════════════════════════════════════════════════════
+
+1. Abra: https://github.com/webgeoprocessamento/Geodenguemonlevade/settings/pages
+
+2. Configure:
+   - Source: Deploy from a branch
+   - Branch: main
+   - Folder: / (root)
+   - Clique SAVE
+
+3. Aguarde 5 minutos
+
+4. Acesse: https://webgeoprocessamento.github.io/Geodenguemonlevade/
+
+═══════════════════════════════════════════════════════════
+

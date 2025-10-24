@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS - João Monlevade, MG</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <!-- Leaflet Heat Plugin CSS -->
+    <style>
+        .leaflet-heatmap-layer {
+            opacity: 0.8;
+        }
+    </style>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Cabeçalho */
+        .header {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 26px;
+            font-weight: 700;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin: 0;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Menu de Modo */
+        .mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Painel de Controle de Camadas Lateral */
+        .layer-panel {
+            position: absolute;
+            top: 120px;
+            right: 10px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.1);
+            max-width: 360px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(102, 126, 234, 0.08);
+            animation: fadeInRight 0.6s ease-out;
+        }
+
+        /* Scrollbar do painel principal */
+        .layer-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .layer-panel::-webkit-scrollbar-track {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+        }
+        
+        .layer-panel::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        .layer-panel::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .layer-panel h3 {
+            color: #667eea;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Seções de Camadas */
+        .layer-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.03);
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .layer-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .layer-section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .layer-item {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(102, 126, 234, 0.05);
+        }
+
+        .layer-item:hover {
+            background: rgba(102, 126, 234, 0.08);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .layer-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: #667eea;
+            border-radius: 6px;
+        }
+
+        .layer-item label {
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #444;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layer-legend {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease;
+        }
+
+        .layer-item:hover .layer-legend {
+            transform: scale(1.1);
+        }
+
+        /* Grupos de Camadas (dentro das seções) */
+        .layer-group {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .group-title {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #5a5a5a;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            user-select: none;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-title:hover {
+            background: rgba(102, 126, 234, 0.08);
+            color: #667eea;
+            transform: translateX(3px);
+        }
+
+        .group-title:active {
+            transform: translateX(0);
+        }
+
+        .group-title span {
+            display: inline-block;
+            width: 18px;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .group-layers {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: max-height 0.3s ease;
+            padding-right: 5px;
+        }
+        
+        /* Customizar scrollbar */
+        .group-layers::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .group-layers::-webkit-scrollbar-track {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+        }
+        
+        .group-layers::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.4);
+            border-radius: 10px;
+        }
+        
+        .group-layers::-webkit-scrollbar-thumb:hover {
+            background: #667eea;
+        }
+
+        .group-layers.collapsed {
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        /* Estilo para camada ativa */
+        .layer-item input[type="checkbox"]:checked + label {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .layer-item input[type="checkbox"]:checked ~ * {
+            color: #667eea;
+        }
+
+        /* Animação fadeInLeft mantida para outros elementos */
+        @keyframes fadeInLeft {
+            from {
+                transform: translateX(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Painel de Estatísticas */
+        .stats-panel {
+            position: absolute;
+            top: 120px;
+            left: 10px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.1);
+            max-width: 320px;
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+            border: 2px solid rgba(102, 126, 234, 0.08);
+            animation: fadeInLeft 0.6s ease-out 0.3s both;
+        }
+
+        .stats-panel h4 {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-item {
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-chart {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .stat-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .stat-bar-label {
+            width: 50px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .stat-bar-fill {
+            flex: 1;
+            height: 20px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            margin: 0 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-bar-value {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Painel de Controle do Heatmap */
+        .heatmap-control-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 10px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3), 0 0 0 1px rgba(255, 107, 107, 0.2);
+            max-width: 320px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInLeft 0.6s ease-out 0.5s both;
+            transition: all 0.3s ease;
+        }
+
+        .heatmap-control-panel.hidden {
+            display: none;
+        }
+
+        .heatmap-control-panel h4 {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .heatmap-control-item {
+            margin-bottom: 20px;
+        }
+
+        .heatmap-control-item label {
+            display: block;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .heatmap-control-item input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 5px;
+        }
+
+        .heatmap-control-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .heatmap-control-item input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .heatmap-control-item input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .heatmap-control-item input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .heatmap-control-item span {
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .heatmap-presets {
+            display: flex;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .preset-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .preset-btn.preset-active {
+            background: white;
+            color: #ff6b6b;
+            border-color: white;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+        }
+
+        .heatmap-legend {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-title {
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .legend-gradient {
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, 
+                #0099ff 0%, 
+                #00ff00 25%, 
+                #ffff00 50%, 
+                #ff9900 75%, 
+                #ff0000 100%
+            );
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Botões de Controle */
+        .control-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .control-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .control-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .control-btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .control-btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Botão de Toggle do Painel */
+        .panel-toggle {
+            position: absolute;
+            top: 120px;
+            right: 310px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .panel-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Modo Mobile */
+        .mobile-mode .header h1 {
+            font-size: 18px;
+        }
+
+        .mobile-mode .header p {
+            font-size: 12px;
+        }
+
+        .mobile-mode .layer-panel {
+            max-width: 200px;
+            padding: 15px;
+            font-size: 12px;
+        }
+
+
+        .mobile-mode .mode-btn {
+            padding: 10px 15px;
+            font-size: 12px;
+        }
+
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 40px 50px;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.25);
+            text-align: center;
+            transition: opacity 0.3s, visibility 0.3s;
+            border: 3px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .loading.hidden {
+            display: none;
+        }
+
+        .loading p {
+            margin-top: 20px;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .spinner {
+            border: 5px solid rgba(102, 126, 234, 0.1);
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Estilo do Popup */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 15px;
+            font-size: 14px;
+        }
+
+        /* Estilos de Popup Leaflet */
+        .leaflet-popup-content-wrapper {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+        }
+
+        .leaflet-popup-content {
+            margin: 18px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .leaflet-popup-tip {
+            box-shadow: 0 3px 14px rgba(102, 126, 234, 0.2);
+        }
+
+        .popup-title {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 17px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leaflet-popup-content p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 6px 0;
+        }
+
+        .leaflet-popup-content strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 15px;
+                top: 5px;
+            }
+
+            .mode-toggle {
+                top: 5px;
+                right: 5px;
+                flex-direction: column;
+            }
+
+            .layer-panel {
+                top: 80px;
+                right: 5px;
+                max-width: calc(100% - 10px);
+            }
+
+            .panel-toggle {
+                right: 5px;
+                top: 80px;
+            }
+        }
+
+        /* Esconder painel */
+        .layer-panel.hidden {
+            transform: translateX(calc(100% + 20px));
+        }
+
+        .panel-toggle.active {
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Carregando dados...</p>
+    </div>
+
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>🗺️ WebGIS João Monlevade - Dengue</h1>
+        <p>Sistema de Informações Geográficas e Vigilância Epidemiológica</p>
+    </div>
+
+    <!-- Menu de Modo -->
+    <div class="mode-toggle">
+        <button class="mode-btn active" id="desktopBtn" onclick="setMode('desktop')">
+            🖥️ Desktop
+        </button>
+        <button class="mode-btn" id="mobileBtn" onclick="setMode('mobile')">
+            📱 Mobile
+        </button>
+    </div>
+
+    <!-- Botão Toggle Painel -->
+    <button class="panel-toggle" id="panelToggle" onclick="togglePanel()">
+        ☰
+    </button>
+
+    <!-- Painel de Camadas -->
+    <div class="layer-panel" id="layerPanel">
+        <h3>📋 Camadas</h3>
+        
+        <!-- Seção: Infraestrutura -->
+        <div class="layer-section">
+            <div class="layer-section-title">
+                🏙️ Camadas Base
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="bairrosCheck" checked onchange="toggleLayer('bairros')">
+                <label for="bairrosCheck">
+                    <span class="layer-legend" style="background: rgba(102, 126, 234, 0.3);"></span>
+                    Bairros
+                </label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="drenagemCheck" checked onchange="toggleLayer('drenagem')">
+                <label for="drenagemCheck">
+                    <span class="layer-legend" style="background: #0088ff; border-color: #0088ff;"></span>
+                    Drenagem
+                </label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="estruturasCheck" checked onchange="toggleLayer('estruturas')">
+                <label for="estruturasCheck">
+                    <span class="layer-legend" style="background: rgba(255, 87, 51, 0.5); border-color: #ff5733;"></span>
+                    Estruturas Urbanas
+                </label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="ruasCheck" onchange="toggleLayer('ruas')">
+                <label for="ruasCheck">
+                    <span class="layer-legend" style="background: #888; border-color: #888;"></span>
+                    Ruas
+                </label>
+            </div>
+        </div>
+
+        <!-- Seção: Casos de Dengue -->
+        <div class="layer-section">
+            <div class="layer-section-title">
+                🦟 Dados Epidemiológicos (2010-2024)
+            </div>
+            
+            <!-- Controles de Visualização -->
+            <div class="control-buttons">
+                <button class="control-btn control-btn-primary" id="heatmapBtn" onclick="toggleHeatmap()">
+                    🔥 Mapa de Calor
+                </button>
+                <button class="control-btn control-btn-primary" id="clusterBtn" onclick="toggleClusters()">
+                    🎯 Clusterização
+                </button>
+                <button class="control-btn control-btn-secondary" onclick="showAllYears()">
+                    📊 Todos os Anos
+                </button>
+            </div>
+            
+            <div class="layer-group">
+                <div class="group-title" onclick="toggleGroup('dengue')">
+                    <span id="dengue-icon">▼</span> Casos de Dengue por Ano
+                </div>
+                <div id="dengue-layers" class="group-layers">
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2010Check" onchange="toggleLayer('dengue2010')">
+                    <label for="dengue2010Check">
+                        <span class="layer-legend" style="background: #ff0000; border-radius: 50%;"></span>
+                        2010
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2011Check" onchange="toggleLayer('dengue2011')">
+                    <label for="dengue2011Check">
+                        <span class="layer-legend" style="background: #ff3300; border-radius: 50%;"></span>
+                        2011
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2012Check" onchange="toggleLayer('dengue2012')">
+                    <label for="dengue2012Check">
+                        <span class="layer-legend" style="background: #ff6600; border-radius: 50%;"></span>
+                        2012
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2013Check" onchange="toggleLayer('dengue2013')">
+                    <label for="dengue2013Check">
+                        <span class="layer-legend" style="background: #ff9900; border-radius: 50%;"></span>
+                        2013
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2014Check" onchange="toggleLayer('dengue2014')">
+                    <label for="dengue2014Check">
+                        <span class="layer-legend" style="background: #ffcc00; border-radius: 50%;"></span>
+                        2014
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2015Check" onchange="toggleLayer('dengue2015')">
+                    <label for="dengue2015Check">
+                        <span class="layer-legend" style="background: #ffff00; border-radius: 50%;"></span>
+                        2015
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2016Check" onchange="toggleLayer('dengue2016')">
+                    <label for="dengue2016Check">
+                        <span class="layer-legend" style="background: #ccff00; border-radius: 50%;"></span>
+                        2016
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2017Check" onchange="toggleLayer('dengue2017')">
+                    <label for="dengue2017Check">
+                        <span class="layer-legend" style="background: #99ff00; border-radius: 50%;"></span>
+                        2017
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2018Check" onchange="toggleLayer('dengue2018')">
+                    <label for="dengue2018Check">
+                        <span class="layer-legend" style="background: #66ff00; border-radius: 50%;"></span>
+                        2018
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2019Check" onchange="toggleLayer('dengue2019')">
+                    <label for="dengue2019Check">
+                        <span class="layer-legend" style="background: #33ff00; border-radius: 50%;"></span>
+                        2019
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2020Check" onchange="toggleLayer('dengue2020')">
+                    <label for="dengue2020Check">
+                        <span class="layer-legend" style="background: #00ff00; border-radius: 50%;"></span>
+                        2020
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2021Check" onchange="toggleLayer('dengue2021')">
+                    <label for="dengue2021Check">
+                        <span class="layer-legend" style="background: #00ff66; border-radius: 50%;"></span>
+                        2021
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2022Check" onchange="toggleLayer('dengue2022')">
+                    <label for="dengue2022Check">
+                        <span class="layer-legend" style="background: #00ffcc; border-radius: 50%;"></span>
+                        2022
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2023Check" onchange="toggleLayer('dengue2023')">
+                    <label for="dengue2023Check">
+                        <span class="layer-legend" style="background: #00ccff; border-radius: 50%;"></span>
+                        2023
+                    </label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" id="dengue2024Check" onchange="toggleLayer('dengue2024')">
+                    <label for="dengue2024Check">
+                        <span class="layer-legend" style="background: #0099ff; border-radius: 50%;"></span>
+                        2024
+                    </label>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Painel de Estatísticas -->
+    <div class="stats-panel" id="statsPanel">
+        <h4>📊 Análise Geoestatística</h4>
+        
+        <div class="stat-item">
+            <div class="stat-label">Total de Casos</div>
+            <div class="stat-value" id="totalCasos">-</div>
+        </div>
+        
+        <div class="stat-item">
+            <div class="stat-label">Média Anual</div>
+            <div class="stat-value" id="mediaCasos">-</div>
+        </div>
+        
+        <div class="stat-chart">
+            <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">🏘️ Top 5 Bairros com Mais Casos</h5>
+            <div id="neighborhoodChart"></div>
+        </div>
+    </div>
+
+    <!-- Painel de Controle do Heatmap -->
+    <div class="heatmap-control-panel hidden" id="heatmapControlPanel">
+        <h4>🔥 Controle do Mapa de Calor</h4>
+        
+        <div class="heatmap-control-item">
+            <label>Raio de Influência</label>
+            <input type="range" id="heatmapRadius" min="10" max="50" value="25" step="5">
+            <span id="radiusValue">25px</span>
+        </div>
+        
+        <div class="heatmap-control-item">
+            <label>Intensidade do Blur</label>
+            <input type="range" id="heatmapBlur" min="10" max="60" value="35" step="5">
+            <span id="blurValue">35px</span>
+        </div>
+        
+        <div class="heatmap-control-item">
+            <label>Intensidade Máxima</label>
+            <input type="range" id="heatmapMax" min="0.5" max="2.0" value="1.0" step="0.1">
+            <span id="maxValue">1.0</span>
+        </div>
+        
+        <div class="heatmap-presets">
+            <button class="preset-btn" onclick="applyHeatmapPreset('suave')">☁️ Suave</button>
+            <button class="preset-btn" onclick="applyHeatmapPreset('medio')">🌡️ Médio</button>
+            <button class="preset-btn preset-active" onclick="applyHeatmapPreset('intenso')">🔥 Intenso</button>
+        </div>
+        
+        <div class="heatmap-legend">
+            <div class="legend-title">Densidade de Casos</div>
+            <div class="legend-gradient"></div>
+            <div class="legend-labels">
+                <span>Baixa</span>
+                <span>Média</span>
+                <span>Alta</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Heat Plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <!-- Leaflet MarkerCluster Plugin -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    
+    <script>
+        // Inicializar mapa centrado em João Monlevade
+        const map = L.map('map').setView([-19.8145, -43.1746], 13);
+
+        // Camada base OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Grupos de camadas
+        let layers = {
+            bairros: null,
+            drenagem: null,
+            estruturas: null,
+            ruas: null,
+            dengue2010: null,
+            dengue2011: null,
+            dengue2012: null,
+            dengue2013: null,
+            dengue2014: null,
+            dengue2015: null,
+            dengue2016: null,
+            dengue2017: null,
+            dengue2018: null,
+            dengue2019: null,
+            dengue2020: null,
+            dengue2021: null,
+            dengue2022: null,
+            dengue2023: null,
+            dengue2024: null
+        };
+
+        // Cores para cada ano de dengue (gradiente de vermelho a azul)
+        const dengueColors = {
+            '2010': '#ff0000',
+            '2011': '#ff3300',
+            '2012': '#ff6600',
+            '2013': '#ff9900',
+            '2014': '#ffcc00',
+            '2015': '#ffff00',
+            '2016': '#ccff00',
+            '2017': '#99ff00',
+            '2018': '#66ff00',
+            '2019': '#33ff00',
+            '2020': '#00ff00',
+            '2021': '#00ff66',
+            '2022': '#00ffcc',
+            '2023': '#00ccff',
+            '2024': '#0099ff'
+        };
+
+        // Variáveis para heatmap e estatísticas
+        let heatmapLayer = null;
+        let heatmapDataByYear = {}; // { '2010': [[lat, lng, intensity], ...], '2011': [...], ... }
+        let heatmapConfig = {
+            radius: 25,
+            blur: 35,
+            max: 1.5,
+            maxZoom: 17,
+            minOpacity: 0.3, // OTIMIZAÇÃO: opacidade mínima
+            gradient: {
+                0.0: '#0099ff',
+                0.2: '#00ff00',
+                0.4: '#ffff00',
+                0.6: '#ff9900',
+                0.8: '#ff0000',
+                1.0: '#8B0000'
+            }
+        };
+        let dengueStats = {
+            yearCounts: {},
+            neighborhoodByYear: {},
+            totalCasos: 0
+        };
+        
+        // Anos atualmente ativos no mapa
+        let activeYears = [];
+        
+        // Variáveis para clusterização
+        let clusterGroups = {};
+        let clusterEnabled = false;
+        
+        // OTIMIZAÇÃO: Cache de dados GeoJSON
+        let dengueDataCache = {}; // { '2010': geoJSONData, '2011': ... }
+
+        // Marcador central
+        const centerMarker = L.marker([-19.8145, -43.1746])
+            .addTo(map)
+            .bindPopup(`
+                <div class="popup-title">João Monlevade</div>
+                <p><strong>Município de Minas Gerais</strong></p>
+                <p>Fundado em 1948</p>
+                <p>Conhecida pela indústria siderúrgica</p>
+            `);
+
+        // Função para carregar e adicionar camadas
+        async function loadLayers() {
+            try {
+                // Carregar Bairros
+                console.log('Carregando Bairros...');
+                const bairrosResponse = await fetch(encodeURI('Bairros Plano Diretor.geojson'));
+                if (!bairrosResponse.ok) {
+                    throw new Error(`Erro ao carregar Bairros: ${bairrosResponse.status} ${bairrosResponse.statusText}`);
+                }
+                const bairrosData = await bairrosResponse.json();
+                console.log('✅ Bairros carregados:', bairrosData.features.length, 'features');
+                
+                layers.bairros = L.geoJSON(bairrosData, {
+                    style: {
+                        color: '#667eea',
+                        weight: 2,
+                        fillColor: '#667eea',
+                        fillOpacity: 0.3
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties.Name) {
+                            layer.bindPopup(`
+                                <div class="popup-title">Bairro ${feature.properties.Name}</div>
+                                <p>João Monlevade, MG</p>
+                            `);
+                        }
+                    }
+                }).addTo(map);
+
+                // Carregar Drenagem
+                console.log('Carregando Drenagem...');
+                const drenagemResponse = await fetch('Drenagem.geojson');
+                if (!drenagemResponse.ok) {
+                    throw new Error(`Erro ao carregar Drenagem: ${drenagemResponse.status}`);
+                }
+                const drenagemData = await drenagemResponse.json();
+                console.log('✅ Drenagem carregada:', drenagemData.features.length, 'features');
+                
+                layers.drenagem = L.geoJSON(drenagemData, {
+                    style: {
+                        color: '#0088ff',
+                        weight: 2,
+                        opacity: 0.8
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        layer.bindPopup(`
+                            <div class="popup-title">Curso d'água</div>
+                            <p><strong>Nome:</strong> ${props.NORIO || 'Sem nome'}</p>
+                            <p><strong>Ordem:</strong> ${props.ORDEM}</p>
+                            <p><strong>Bacia:</strong> ${props.NOME_BACIA}</p>
+                        `);
+                    }
+                }).addTo(map);
+
+                // Carregar Estruturas Urbanas
+                console.log('Carregando Estruturas Urbanas...');
+                const estruturasResponse = await fetch(encodeURI('Estruturas Urbanas.geojson'));
+                if (!estruturasResponse.ok) {
+                    throw new Error(`Erro ao carregar Estruturas: ${estruturasResponse.status}`);
+                }
+                const estruturasData = await estruturasResponse.json();
+                console.log('✅ Estruturas Urbanas carregadas:', estruturasData.features.length, 'features');
+                
+                layers.estruturas = L.geoJSON(estruturasData, {
+                    style: {
+                        color: '#ff5733',
+                        weight: 1,
+                        fillColor: '#ff5733',
+                        fillOpacity: 0.5
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        layer.bindPopup(`
+                            <div class="popup-title">${props.name || 'Estrutura Urbana'}</div>
+                            <p><strong>Tipo:</strong> ${props.fclass || 'Não especificado'}</p>
+                            ${props.type ? `<p><strong>Categoria:</strong> ${props.type}</p>` : ''}
+                        `);
+                    }
+                }).addTo(map);
+
+                // Carregar Ruas (inicialmente desativada)
+                console.log('Carregando Ruas...');
+                const ruasResponse = await fetch('Ruas.geojson');
+                if (!ruasResponse.ok) {
+                    throw new Error(`Erro ao carregar Ruas: ${ruasResponse.status}`);
+                }
+                const ruasData = await ruasResponse.json();
+                console.log('✅ Ruas carregadas:', ruasData.features.length, 'features');
+                
+                layers.ruas = L.geoJSON(ruasData, {
+                    style: {
+                        color: '#888',
+                        weight: 1,
+                        opacity: 0.6
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        const nomeCompleto = `${props.NM_TIP_LOG || ''} ${props.NM_LOG || ''}`.trim();
+                        layer.bindPopup(`
+                            <div class="popup-title">${nomeCompleto || 'Via'}</div>
+                            <p><strong>Setor:</strong> ${props.CD_SETOR}</p>
+                        `);
+                    }
+                });
+
+                // Carregar todas as camadas de dengue (2010-2024)
+                const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
+                
+                for (const year of dengueYears) {
+                    try {
+                        const response = await fetch(encodeURI(`Casos dengue ${year}.geojson`));
+                        if (!response.ok) {
+                            console.warn(`Dengue ${year} não encontrada (${response.status})`);
+                            continue;
+                        }
+                        const data = await response.json();
+                        
+                        const color = dengueColors[year];
+                        const layerKey = `dengue${year}`;
+                        
+                        // Armazenar dados para estatísticas
+                        dengueStats.yearCounts[year] = data.features.length;
+                        dengueStats.totalCasos += data.features.length;
+                        
+                        // Inicializar objetos para este ano
+                        dengueStats.neighborhoodByYear[year] = {};
+                        heatmapDataByYear[year] = [];
+                        
+                        // Adicionar pontos ao heatmap e contar por bairro POR ANO
+                        data.features.forEach(feature => {
+                            if (feature.geometry && feature.geometry.coordinates) {
+                                const coords = feature.geometry.coordinates;
+                                
+                                // Armazenar dados de heatmap POR ANO
+                                heatmapDataByYear[year].push([coords[1], coords[0], 0.5]); // lat, lng, intensity
+                                
+                                // Extrair nome do bairro
+                                const props = feature.properties;
+                                let bairro = 'Não identificado';
+                                if (props.Name) {
+                                    // Tentar extrair bairro do campo Name (geralmente separado por vírgula)
+                                    const parts = props.Name.split(',');
+                                    if (parts.length >= 4) {
+                                        bairro = parts[3].trim();
+                                    } else if (parts.length >= 1) {
+                                        bairro = parts[0].trim();
+                                    }
+                                } else if (props.descriptio) {
+                                    const parts = props.descriptio.split(',');
+                                    if (parts.length >= 4) {
+                                        bairro = parts[3].trim();
+                                    } else if (parts.length >= 1) {
+                                        bairro = parts[0].trim();
+                                    }
+                                }
+                                
+                                // Contar casos por bairro NESTE ANO
+                                if (!dengueStats.neighborhoodByYear[year][bairro]) {
+                                    dengueStats.neighborhoodByYear[year][bairro] = 0;
+                                }
+                                dengueStats.neighborhoodByYear[year][bairro]++;
+                            }
+                        });
+                        
+                        // Cache dos dados GeoJSON para reuso
+                        dengueDataCache[year] = data;
+                        
+                        // Criar layer normal (SEM duplicação)
+                        layers[layerKey] = L.geoJSON(data, {
+                            pointToLayer: function(feature, latlng) {
+                                return L.circleMarker(latlng, {
+                                    radius: 4,
+                                    fillColor: color,
+                                    color: '#fff',
+                                    weight: 1,
+                                    opacity: 1,
+                                    fillOpacity: 0.7
+                                });
+                            },
+                            onEachFeature: function(feature, layer) {
+                                const props = feature.properties;
+                                const endereco = props.descriptio || props.Name || 'Endereço não disponível';
+                                layer.bindPopup(`
+                                    <div class="popup-title">🦟 Caso de Dengue - ${year}</div>
+                                    <p><strong>Ano:</strong> ${year}</p>
+                                    <p><strong>Local:</strong> ${endereco}</p>
+                                    <p><strong>Bairro:</strong> ${props.Name ? props.Name.split(',')[3] || 'N/A' : 'N/A'}</p>
+                                `);
+                            }
+                        });
+                        // Não adicionar ao mapa inicialmente (usuário ativa manualmente)
+                        console.log(`Camada de dengue ${year} carregada: ${data.features.length} casos`);
+                    } catch (error) {
+                        console.warn(`Não foi possível carregar dengue ${year}:`, error);
+                    }
+                }
+                
+                // Atualizar estatísticas no painel
+                updateStatistics();
+
+                // Ajustar visualização para os dados carregados
+                if (layers.bairros) {
+                    map.fitBounds(layers.bairros.getBounds());
+                }
+
+                // Esconder loading
+                document.getElementById('loading').classList.add('hidden');
+
+            } catch (error) {
+                console.error('Erro detalhado ao carregar camadas:', error);
+                console.error('Stack trace:', error.stack);
+                document.getElementById('loading').innerHTML = `
+                    <div style="padding: 30px; background: white; border-radius: 15px; max-width: 500px; margin: 0 auto;">
+                        <h3 style="color: #ff0000; margin-bottom: 10px;">❌ Erro ao Carregar Dados</h3>
+                        <p style="margin-bottom: 15px;"><strong>Mensagem:</strong> ${error.message}</p>
+                        <p style="font-size: 12px; color: #666;">Abra o Console (F12) para mais detalhes</p>
+                        <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Toggle de camadas
+        function toggleLayer(layerName) {
+            const layer = layers[layerName];
+            if (!layer) return;
+            
+            const isDengue = layerName.startsWith('dengue');
+            const year = isDengue ? layerName.replace('dengue', '') : null;
+
+            if (map.hasLayer(layer) || (isDengue && clusterGroups[year] && map.hasLayer(clusterGroups[year]))) {
+                // Remover camada
+                if (clusterEnabled && isDengue && clusterGroups[year]) {
+                    map.removeLayer(clusterGroups[year]);
+                } else {
+                    map.removeLayer(layer);
+                }
+                
+                // Se for camada de dengue, remover da lista de ativos
+                if (isDengue) {
+                    const index = activeYears.indexOf(year);
+                    if (index > -1) {
+                        activeYears.splice(index, 1);
+                    }
+                }
+            } else {
+                // Adicionar camada
+                if (clusterEnabled && isDengue && clusterGroups[year]) {
+                    map.addLayer(clusterGroups[year]);
+                } else {
+                    map.addLayer(layer);
+                }
+                
+                // Se for camada de dengue, adicionar à lista de ativos
+                if (isDengue) {
+                    if (!activeYears.includes(year)) {
+                        activeYears.push(year);
+                        activeYears.sort(); // Manter ordenado
+                    }
+                }
+            }
+            
+            // Atualizar estatísticas e heatmap se for camada de dengue
+            if (isDengue) {
+                updateStatistics();
+                
+                // Se o heatmap está ativo, atualizar com os novos dados
+                if (heatmapLayer) {
+                    updateHeatmap();
+                }
+            }
+        }
+
+        // Alternar modo Desktop/Mobile
+        function setMode(mode) {
+            const body = document.body;
+            const desktopBtn = document.getElementById('desktopBtn');
+            const mobileBtn = document.getElementById('mobileBtn');
+
+            if (mode === 'mobile') {
+                body.classList.add('mobile-mode');
+                mobileBtn.classList.add('active');
+                desktopBtn.classList.remove('active');
+            } else {
+                body.classList.remove('mobile-mode');
+                desktopBtn.classList.add('active');
+                mobileBtn.classList.remove('active');
+            }
+        }
+
+        // Toggle do painel lateral
+        function togglePanel() {
+            const panel = document.getElementById('layerPanel');
+            const toggle = document.getElementById('panelToggle');
+            
+            panel.classList.toggle('hidden');
+            toggle.classList.toggle('active');
+            toggle.innerHTML = panel.classList.contains('hidden') ? '☰' : '✕';
+        }
+
+        // Toggle de grupos de camadas (expandir/recolher)
+        function toggleGroup(groupName) {
+            const layersDiv = document.getElementById(`${groupName}-layers`);
+            const icon = document.getElementById(`${groupName}-icon`);
+            
+            if (layersDiv.classList.contains('collapsed')) {
+                layersDiv.classList.remove('collapsed');
+                icon.innerHTML = '▼';
+            } else {
+                layersDiv.classList.add('collapsed');
+                icon.innerHTML = '▶';
+            }
+        }
+
+        // Função para agregar dados de heatmap dos anos ativos
+        function getActiveHeatmapData() {
+            const aggregatedData = [];
+            activeYears.forEach(year => {
+                if (heatmapDataByYear[year]) {
+                    aggregatedData.push(...heatmapDataByYear[year]);
+                }
+            });
+            return aggregatedData;
+        }
+
+        // Função para toggle do mapa de calor
+        function toggleHeatmap() {
+            const btn = document.getElementById('heatmapBtn');
+            const controlPanel = document.getElementById('heatmapControlPanel');
+            
+            if (heatmapLayer) {
+                // Desativar heatmap
+                map.removeLayer(heatmapLayer);
+                heatmapLayer = null;
+                btn.classList.remove('active');
+                btn.classList.add('control-btn-primary');
+                btn.classList.remove('control-btn-secondary');
+                controlPanel.classList.add('hidden');
+            } else {
+                // Verificar se há anos ativos
+                if (activeYears.length === 0) {
+                    alert('⚠️ Marque pelo menos um ano de dengue para ativar o mapa de calor!');
+                    return;
+                }
+                
+                // Ativar heatmap com dados dos anos ativos
+                const heatmapData = getActiveHeatmapData();
+                heatmapLayer = L.heatLayer(heatmapData, heatmapConfig).addTo(map);
+                btn.classList.add('active');
+                btn.classList.remove('control-btn-primary');
+                btn.classList.add('control-btn-secondary');
+                controlPanel.classList.remove('hidden');
+                initHeatmapControls();
+            }
+        }
+
+        // Inicializar controles do heatmap
+        function initHeatmapControls() {
+            // Raio
+            const radiusSlider = document.getElementById('heatmapRadius');
+            const radiusValue = document.getElementById('radiusValue');
+            radiusSlider.value = heatmapConfig.radius;
+            radiusValue.textContent = heatmapConfig.radius + 'px';
+            
+            radiusSlider.oninput = function() {
+                radiusValue.textContent = this.value + 'px';
+                heatmapConfig.radius = parseInt(this.value);
+                updateHeatmap();
+            };
+            
+            // Blur
+            const blurSlider = document.getElementById('heatmapBlur');
+            const blurValue = document.getElementById('blurValue');
+            blurSlider.value = heatmapConfig.blur;
+            blurValue.textContent = heatmapConfig.blur + 'px';
+            
+            blurSlider.oninput = function() {
+                blurValue.textContent = this.value + 'px';
+                heatmapConfig.blur = parseInt(this.value);
+                updateHeatmap();
+            };
+            
+            // Max
+            const maxSlider = document.getElementById('heatmapMax');
+            const maxValue = document.getElementById('maxValue');
+            maxSlider.value = heatmapConfig.max;
+            maxValue.textContent = heatmapConfig.max.toFixed(1);
+            
+            maxSlider.oninput = function() {
+                maxValue.textContent = parseFloat(this.value).toFixed(1);
+                heatmapConfig.max = parseFloat(this.value);
+                updateHeatmap();
+            };
+        }
+
+        // Atualizar heatmap com novas configurações
+        function updateHeatmap() {
+            if (heatmapLayer) {
+                const heatmapData = getActiveHeatmapData();
+                map.removeLayer(heatmapLayer);
+                heatmapLayer = L.heatLayer(heatmapData, heatmapConfig).addTo(map);
+            }
+        }
+
+        // Aplicar presets do heatmap
+        function applyHeatmapPreset(preset) {
+            // Remover active de todos os botões
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('preset-active');
+            });
+            
+            // Aplicar configuração
+            if (preset === 'suave') {
+                heatmapConfig.radius = 40;
+                heatmapConfig.blur = 50;
+                heatmapConfig.max = 0.8; // AUMENTADO de 0.6 para 0.8
+                document.querySelector('.preset-btn:nth-child(1)').classList.add('preset-active');
+            } else if (preset === 'medio') {
+                heatmapConfig.radius = 25;
+                heatmapConfig.blur = 35;
+                heatmapConfig.max = 1.5; // AUMENTADO de 1.0 para 1.5
+                document.querySelector('.preset-btn:nth-child(2)').classList.add('preset-active');
+            } else if (preset === 'intenso') {
+                heatmapConfig.radius = 15;
+                heatmapConfig.blur = 20;
+                heatmapConfig.max = 2.0; // AUMENTADO de 1.5 para 2.0
+                document.querySelector('.preset-btn:nth-child(3)').classList.add('preset-active');
+            }
+            
+            // Atualizar sliders
+            document.getElementById('heatmapRadius').value = heatmapConfig.radius;
+            document.getElementById('radiusValue').textContent = heatmapConfig.radius + 'px';
+            document.getElementById('heatmapBlur').value = heatmapConfig.blur;
+            document.getElementById('blurValue').textContent = heatmapConfig.blur + 'px';
+            document.getElementById('heatmapMax').value = heatmapConfig.max;
+            document.getElementById('maxValue').textContent = heatmapConfig.max.toFixed(1);
+            
+            // Atualizar mapa
+            updateHeatmap();
+        }
+
+        // Função para mostrar todos os anos
+        function showAllYears() {
+            const dengueYears = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
+            
+            // Limpar e repopular activeYears
+            activeYears = [];
+            
+            dengueYears.forEach(year => {
+                const layerKey = `dengue${year}`;
+                const checkbox = document.getElementById(`${layerKey}Check`);
+                
+                if (layers[layerKey] && !map.hasLayer(layers[layerKey])) {
+                    map.addLayer(layers[layerKey]);
+                    if (checkbox) checkbox.checked = true;
+                    activeYears.push(year);
+                } else if (layers[layerKey] && map.hasLayer(layers[layerKey])) {
+                    // Já está ativo
+                    activeYears.push(year);
+                }
+            });
+            
+            // Atualizar estatísticas
+            updateStatistics();
+            
+            // Se o heatmap está ativo, atualizar com todos os anos
+            if (heatmapLayer) {
+                updateHeatmap();
+            }
+        }
+
+        // Função para atualizar estatísticas
+        function updateStatistics() {
+            // Total de casos (sempre todos os anos)
+            document.getElementById('totalCasos').textContent = dengueStats.totalCasos.toLocaleString('pt-BR');
+            
+            // Média anual (sempre todos os anos)
+            const numYears = Object.keys(dengueStats.yearCounts).length;
+            const media = Math.round(dengueStats.totalCasos / numYears);
+            document.getElementById('mediaCasos').textContent = media.toLocaleString('pt-BR');
+            
+            // Criar gráfico de bairros (baseado nos anos ativos)
+            createNeighborhoodChart();
+        }
+
+        // Função para criar gráfico dos top 5 bairros (DINÂMICO)
+        function createNeighborhoodChart() {
+            const chartDiv = document.getElementById('neighborhoodChart');
+            const titleDiv = chartDiv.previousElementSibling; // h5 com o título
+            chartDiv.innerHTML = '';
+            
+            // Se nenhum ano ativo, mostrar mensagem
+            if (activeYears.length === 0) {
+                titleDiv.textContent = '🏘️ Top 5 Bairros - Selecione anos';
+                chartDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Marque um ou mais anos de dengue para ver o ranking de bairros</p>';
+                return;
+            }
+            
+            // Atualizar título com anos selecionados
+            if (activeYears.length === 1) {
+                titleDiv.textContent = `🏘️ Top 5 Bairros - ${activeYears[0]}`;
+            } else if (activeYears.length <= 3) {
+                titleDiv.textContent = `🏘️ Top 5 Bairros - ${activeYears.join(', ')}`;
+            } else {
+                titleDiv.textContent = `🏘️ Top 5 Bairros - ${activeYears.length} anos`;
+            }
+            
+            // Agregar casos por bairro dos anos ativos
+            const aggregatedNeighborhoods = {};
+            activeYears.forEach(year => {
+                const yearData = dengueStats.neighborhoodByYear[year];
+                if (yearData) {
+                    Object.entries(yearData).forEach(([bairro, count]) => {
+                        if (!aggregatedNeighborhoods[bairro]) {
+                            aggregatedNeighborhoods[bairro] = 0;
+                        }
+                        aggregatedNeighborhoods[bairro] += count;
+                    });
+                }
+            });
+            
+            // Ordenar e pegar top 5
+            const sortedNeighborhoods = Object.entries(aggregatedNeighborhoods)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            if (sortedNeighborhoods.length === 0) {
+                chartDiv.innerHTML = '<p style="text-align: center; color: #999;">Nenhum dado disponível</p>';
+                return;
+            }
+            
+            // Encontrar o máximo para escala
+            const maxCasos = sortedNeighborhoods[0][1];
+            
+            // Criar barras para cada bairro
+            sortedNeighborhoods.forEach(([bairro, count], index) => {
+                const percentage = (count / maxCasos) * 100;
+                
+                // Cores gradientes para o ranking
+                const colors = ['#667eea', '#764ba2', '#8b6fb8', '#9f87c3', '#b39fce'];
+                const color = colors[index] || '#667eea';
+                
+                const barDiv = document.createElement('div');
+                barDiv.className = 'stat-bar';
+                barDiv.style.marginBottom = '10px';
+                barDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px;">
+                        <strong style="color: ${color};">${index + 1}º ${bairro}</strong>
+                        <span style="color: ${color}; font-weight: 600;">${count.toLocaleString('pt-BR')} casos</span>
+                    </div>
+                    <div style="width: 100%; height: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; overflow: hidden;">
+                        <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 6px; transition: width 0.5s ease;"></div>
+                    </div>
+                `;
+                chartDiv.appendChild(barDiv);
+            });
+        }
+
+        // Função para criar cluster group sob demanda
+        function createClusterForYear(year) {
+            if (clusterGroups[year]) {
+                return clusterGroups[year]; // Já existe
+            }
+            
+            const color = dengueColors[year];
+            const data = dengueDataCache[year];
+            
+            if (!data) return null;
+            
+            // Criar cluster group
+            const clusterGroup = L.markerClusterGroup({
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: true,
+                zoomToBoundsOnClick: true,
+                disableClusteringAtZoom: 18,
+                chunkedLoading: true, // OTIMIZAÇÃO: carregamento em chunks
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    let size = 'small';
+                    if (count > 50) size = 'large';
+                    else if (count > 20) size = 'medium';
+                    
+                    return L.divIcon({
+                        html: '<div><span>' + count + '</span></div>',
+                        className: 'marker-cluster marker-cluster-' + size,
+                        iconSize: L.point(40, 40)
+                    });
+                }
+            });
+            
+            // Adicionar apenas os marcadores ao cluster
+            L.geoJSON(data, {
+                pointToLayer: function(feature, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 6,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                },
+                onEachFeature: function(feature, layer) {
+                    const props = feature.properties;
+                    const endereco = props.descriptio || props.Name || 'Endereço não disponível';
+                    layer.bindPopup(`
+                        <div class="popup-title">🦟 Caso de Dengue - ${year}</div>
+                        <p><strong>Ano:</strong> ${year}</p>
+                        <p><strong>Local:</strong> ${endereco}</p>
+                        <p><strong>Bairro:</strong> ${props.Name ? props.Name.split(',')[3] || 'N/A' : 'N/A'}</p>
+                    `);
+                    clusterGroup.addLayer(layer);
+                }
+            });
+            
+            clusterGroups[year] = clusterGroup;
+            return clusterGroup;
+        }
+        
+        // Função para toggle da clusterização (OTIMIZADA)
+        function toggleClusters() {
+            const btn = document.getElementById('clusterBtn');
+            
+            if (activeYears.length === 0) {
+                alert('⚠️ Marque pelo menos um ano de dengue primeiro!');
+                return;
+            }
+            
+            clusterEnabled = !clusterEnabled;
+            
+            if (clusterEnabled) {
+                // Ativar clusterização
+                btn.classList.add('active');
+                btn.classList.remove('control-btn-primary');
+                btn.classList.add('control-btn-secondary');
+                
+                // Remover layers normais e adicionar clusters (SOB DEMANDA)
+                activeYears.forEach(year => {
+                    const layerKey = `dengue${year}`;
+                    if (layers[layerKey] && map.hasLayer(layers[layerKey])) {
+                        map.removeLayer(layers[layerKey]);
+                    }
+                    
+                    // Criar cluster sob demanda e adicionar
+                    const cluster = createClusterForYear(year);
+                    if (cluster) {
+                        map.addLayer(cluster);
+                    }
+                });
+            } else {
+                // Desativar clusterização
+                btn.classList.remove('active');
+                btn.classList.add('control-btn-primary');
+                btn.classList.remove('control-btn-secondary');
+                
+                // Remover clusters e adicionar layers normais
+                activeYears.forEach(year => {
+                    if (clusterGroups[year] && map.hasLayer(clusterGroups[year])) {
+                        map.removeLayer(clusterGroups[year]);
+                    }
+                    const layerKey = `dengue${year}`;
+                    if (layers[layerKey]) {
+                        map.addLayer(layers[layerKey]);
+                    }
+                });
+            }
+        }
+
+        // Carregar camadas ao iniciar
+        loadLayers();
+
+        // Adicionar controle de zoom
+        map.zoomControl.setPosition('bottomright');
+
+        // Adicionar escala
+        L.control.scale({
+            imperial: false,
+            position: 'bottomleft'
+        }).addTo(map);
+
+        // Responsividade: detectar dispositivo mobile
+        if (window.innerWidth <= 768) {
+            setMode('mobile');
+        }
+    </script>
+</body>
+</html>
+

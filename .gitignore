@@ -1,0 +1,43 @@
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+*~
+*.log
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Arquivos de teste (não incluir no deploy)
+teste.html
+teste-mapa.html
+diagnostico.html
+ola.html
+inicio.html
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+
+# Node modules (se usar no futuro)
+node_modules/
+
+# Backups
+backup/
+*.backup
+
