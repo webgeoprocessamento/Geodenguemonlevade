@@ -1865,12 +1865,31 @@
                 }
             });
             
+            // Função para normalizar texto (remover acentos, espaços extras, etc)
+            const normalizeText = (text) => {
+                return text
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                    .replace(/\s+/g, ' ') // Normaliza espaços
+                    .trim();
+            };
+            
             // Filtrar bairros não relevantes e ordenar, pegando top 5
-            const bairrosExcluir = ['João Monlevade', 'Não identificado', 'N/A', '', 'null', 'undefined'];
+            const bairrosExcluir = [
+                'joao monlevade', 'joão monlevade', 'monlevade',
+                'nao identificado', 'não identificado', 'nao informado', 'não informado',
+                'n/a', 'na', 'n a', 'sem informacao', 'sem informação',
+                'desconhecido', 'indefinido', 'null', 'undefined', ''
+            ];
+            
             const sortedNeighborhoods = Object.entries(aggregatedNeighborhoods)
-                .filter(([bairro]) => !bairrosExcluir.some(excluir => 
-                    bairro.toLowerCase().includes(excluir.toLowerCase())
-                ))
+                .filter(([bairro]) => {
+                    const bairroNorm = normalizeText(bairro);
+                    // Excluir se for vazio ou estiver na lista de exclusão
+                    if (!bairroNorm || bairroNorm.length === 0) return false;
+                    return !bairrosExcluir.some(excluir => bairroNorm.includes(excluir));
+                })
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
             
