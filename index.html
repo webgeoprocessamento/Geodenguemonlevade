@@ -1104,11 +1104,6 @@
             <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">🏘️ Top 5 Bairros com Mais Casos</h5>
             <div id="neighborhoodChart"></div>
         </div>
-        
-        <div class="stat-chart">
-            <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">👥 Distribuição por Sexo</h5>
-            <div id="sexChart"></div>
-        </div>
     </div>
 
     <!-- Painel de Controle do Heatmap -->
@@ -1818,9 +1813,6 @@
             
             // Criar gráfico de bairros (baseado nos anos ativos)
             createNeighborhoodChart();
-            
-            // Criar gráfico de sexo
-            createSexChart();
         }
 
         // Função para criar gráfico dos top 5 bairros (DINÂMICO)
@@ -1932,62 +1924,6 @@
                     </div>
                     <div style="width: 100%; height: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; overflow: hidden;">
                         <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 6px; transition: width 0.5s ease;"></div>
-                    </div>
-                `;
-                chartDiv.appendChild(barDiv);
-            });
-        }
-
-        // Função para criar gráfico de distribuição por SEXO (DINÂMICO)
-        function createSexChart() {
-            const chartDiv = document.getElementById('sexChart');
-            const titleDiv = chartDiv.previousElementSibling;
-            chartDiv.innerHTML = '';
-            
-            // Se nenhum ano ativo, mostrar mensagem
-            if (activeYears.length === 0) {
-                titleDiv.textContent = '👥 Distribuição por Sexo - Selecione anos';
-                chartDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Marque um ou mais anos para ver a distribuição</p>';
-                return;
-            }
-            
-            // Agregar dados de sexo dos anos ativos (apenas M e F)
-            const aggregatedSex = { M: 0, F: 0 };
-            activeYears.forEach(year => {
-                const yearData = dengueStats.sexByYear[year];
-                if (yearData) {
-                    aggregatedSex.M += yearData.M || 0;
-                    aggregatedSex.F += yearData.F || 0;
-                }
-            });
-            
-            const total = aggregatedSex.M + aggregatedSex.F;
-            
-            if (total === 0) {
-                chartDiv.innerHTML = '<p style="text-align: center; color: #999;">Nenhum dado disponível</p>';
-                return;
-            }
-            
-            // Calcular percentuais
-            const percM = ((aggregatedSex.M / total) * 100).toFixed(1);
-            const percF = ((aggregatedSex.F / total) * 100).toFixed(1);
-            
-            // Criar barras horizontais (apenas Masculino e Feminino)
-            const sexData = [
-                { label: '♂️ Masculino', count: aggregatedSex.M, perc: percM, color: '#4A90E2' },
-                { label: '♀️ Feminino', count: aggregatedSex.F, perc: percF, color: '#E24A90' }
-            ];
-            
-            sexData.forEach(item => {
-                const barDiv = document.createElement('div');
-                barDiv.style.marginBottom = '12px';
-                barDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px;">
-                        <strong style="color: ${item.color};">${item.label}</strong>
-                        <span style="color: ${item.color}; font-weight: 600;">${item.count.toLocaleString('pt-BR')} (${item.perc}%)</span>
-                    </div>
-                    <div style="width: 100%; height: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; overflow: hidden;">
-                        <div style="width: ${item.perc}%; height: 100%; background: ${item.color}; border-radius: 6px; transition: width 0.5s ease;"></div>
                     </div>
                 `;
                 chartDiv.appendChild(barDiv);
