@@ -439,33 +439,52 @@
         }
 
         .stat-item {
-            margin: 12px 0;
-            padding: 12px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #888;
+            font-size: 13px;
+            color: #667eea;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .stat-chart {
-            margin-top: 15px;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 1px solid rgba(102, 126, 234, 0.1);
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(248, 249, 255, 0.8) 100%);
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.15);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .stat-chart h5 {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 13px !important;
         }
 
         .stat-bar {
@@ -1091,17 +1110,17 @@
         </h4>
         
         <div class="stat-item">
-            <div class="stat-label">Total de Casos</div>
+            <div class="stat-label">📈 Total de Casos</div>
             <div class="stat-value" id="totalCasos">-</div>
         </div>
         
         <div class="stat-item">
-            <div class="stat-label">Média Anual</div>
+            <div class="stat-label">📊 Média Anual</div>
             <div class="stat-value" id="mediaCasos">-</div>
         </div>
         
         <div class="stat-chart">
-            <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">🏘️ Top 5 Bairros com Mais Casos</h5>
+            <h5 style="margin-bottom: 15px; color: #667eea; font-size: 14px;">🏘️ Ranking de Bairros Mais Afetados</h5>
             <div id="neighborhoodChart"></div>
         </div>
     </div>
