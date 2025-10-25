@@ -1109,11 +1109,6 @@
             <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">👥 Distribuição por Sexo</h5>
             <div id="sexChart"></div>
         </div>
-        
-        <div class="stat-chart">
-            <h5 style="margin-bottom: 10px; color: #667eea; font-size: 14px;">📊 Distribuição por Faixa Etária</h5>
-            <div id="ageChart"></div>
-        </div>
     </div>
 
     <!-- Painel de Controle do Heatmap -->
@@ -1824,9 +1819,8 @@
             // Criar gráfico de bairros (baseado nos anos ativos)
             createNeighborhoodChart();
             
-            // Criar gráficos de sexo e idade
+            // Criar gráfico de sexo
             createSexChart();
-            createAgeChart();
         }
 
         // Função para criar gráfico dos top 5 bairros (DINÂMICO)
@@ -1998,83 +1992,6 @@
                 `;
                 chartDiv.appendChild(barDiv);
             });
-        }
-
-        // Função para criar gráfico de distribuição por FAIXA ETÁRIA (SEMPRE VISÍVEL)
-        function createAgeChart() {
-            const chartDiv = document.getElementById('ageChart');
-            const titleDiv = chartDiv.previousElementSibling;
-            chartDiv.innerHTML = '';
-            
-            // Agregar dados de idade dos anos ativos (ou inicializar com 0)
-            const aggregatedAge = { '0-10': 0, '11-20': 0, '21-30': 0, '31-40': 0, '41-50': 0, '51-60': 0, '60+': 0 };
-            
-            if (activeYears.length > 0) {
-                activeYears.forEach(year => {
-                    const yearData = dengueStats.ageByYear[year];
-                    if (yearData) {
-                        Object.keys(aggregatedAge).forEach(faixa => {
-                            aggregatedAge[faixa] += yearData[faixa] || 0;
-                        });
-                    }
-                });
-            }
-            
-            const total = Object.values(aggregatedAge).reduce((sum, val) => sum + val, 0);
-            
-            // Encontrar o máximo para escala (ou 1 se todos forem zero)
-            const maxCasos = Math.max(...Object.values(aggregatedAge), 1);
-            
-            // Cores gradientes para as faixas etárias
-            const colors = ['#00D9FF', '#00B8E6', '#0096CC', '#0075B3', '#005499', '#003380', '#001166'];
-            
-            // Nomenclaturas mais descritivas para as faixas etárias
-            const faixaLabels = {
-                '0-10': 'Crianças (0-10 anos)',
-                '11-20': 'Adolescentes (11-20 anos)',
-                '21-30': 'Jovens Adultos (21-30 anos)',
-                '31-40': 'Adultos (31-40 anos)',
-                '41-50': 'Adultos (41-50 anos)',
-                '51-60': 'Adultos Maduros (51-60 anos)',
-                '60+': 'Idosos (60+ anos)'
-            };
-            
-            // Criar barras para TODAS as faixas etárias (sempre visíveis)
-            Object.entries(aggregatedAge).forEach(([faixa, count], index) => {
-                const percentage = total > 0 ? (count / maxCasos) * 100 : 0;
-                const perc = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
-                const color = colors[index];
-                const label = faixaLabels[faixa] || `${faixa} anos`;
-                
-                // Estilo diferente para valores zero (mais discreto)
-                const opacity = count > 0 ? '1' : '0.3';
-                const displayValue = count > 0 ? `${count.toLocaleString('pt-BR')} (${perc}%)` : '-';
-                
-                const barDiv = document.createElement('div');
-                barDiv.style.marginBottom = '10px';
-                barDiv.style.opacity = opacity;
-                barDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px;">
-                        <strong style="color: ${color};">${label}</strong>
-                        <span style="color: ${color}; font-weight: 600;">${displayValue}</span>
-                    </div>
-                    <div style="width: 100%; height: 12px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; overflow: hidden;">
-                        <div style="width: ${percentage}%; height: 100%; background: ${color}; border-radius: 6px; transition: width 0.5s ease;"></div>
-                    </div>
-                `;
-                chartDiv.appendChild(barDiv);
-            });
-            
-            // Atualizar título
-            if (activeYears.length === 0) {
-                titleDiv.textContent = '📊 Distribuição por Faixa Etária';
-            } else if (activeYears.length === 1) {
-                titleDiv.textContent = `📊 Distribuição por Faixa Etária - ${activeYears[0]}`;
-            } else if (activeYears.length <= 3) {
-                titleDiv.textContent = `📊 Distribuição por Faixa Etária - ${activeYears.join(', ')}`;
-            } else {
-                titleDiv.textContent = `📊 Distribuição por Faixa Etária - ${activeYears.length} anos`;
-            }
         }
 
         // Função para criar cluster group sob demanda
