@@ -1875,23 +1875,42 @@
                     .trim();
             };
             
-            // Filtrar bairros não relevantes e ordenar, pegando top 5
-            const bairrosExcluir = [
-                'joao monlevade', 'joão monlevade', 'monlevade',
-                'nao identificado', 'não identificado', 'nao informado', 'não informado',
-                'n/a', 'na', 'n a', 'sem informacao', 'sem informação',
-                'desconhecido', 'indefinido', 'null', 'undefined', ''
+            // Debug: mostrar todos os bairros antes do filtro
+            console.log('Bairros antes do filtro:', Object.keys(aggregatedNeighborhoods));
+            
+            // Filtrar bairros não relevantes de forma mais específica
+            const bairrosExcluirExato = [
+                'joao monlevade', 'joão monlevade',
+                'nao identificado', 'não identificado', 
+                'nao informado', 'não informado',
+                'sem informacao', 'sem informação',
+                'desconhecido', 'indefinido',
+                'n/a', 'na', 'n a',
+                'null', 'undefined', ''
             ];
             
             const sortedNeighborhoods = Object.entries(aggregatedNeighborhoods)
                 .filter(([bairro]) => {
                     const bairroNorm = normalizeText(bairro);
-                    // Excluir se for vazio ou estiver na lista de exclusão
+                    
+                    // Excluir se for vazio
                     if (!bairroNorm || bairroNorm.length === 0) return false;
-                    return !bairrosExcluir.some(excluir => bairroNorm.includes(excluir));
+                    
+                    // Excluir apenas se for EXATAMENTE igual aos termos (não apenas contém)
+                    const isExcluded = bairrosExcluirExato.includes(bairroNorm);
+                    
+                    if (!isExcluded) {
+                        console.log('Bairro mantido:', bairro, '(normalizado:', bairroNorm + ')');
+                    } else {
+                        console.log('Bairro excluído:', bairro, '(normalizado:', bairroNorm + ')');
+                    }
+                    
+                    return !isExcluded;
                 })
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
+            
+            console.log('Top 5 bairros após filtro:', sortedNeighborhoods);
             
             if (sortedNeighborhoods.length === 0) {
                 chartDiv.innerHTML = '<p style="text-align: center; color: #999;">Nenhum dado disponível</p>';
